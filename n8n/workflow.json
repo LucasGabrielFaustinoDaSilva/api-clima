@@ -1,0 +1,44 @@
+{
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "1",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.openweathermap.org/data/2.5/weather?q=Barra%20Bonita&appid=SUA_API_KEY&units=metric&lang=pt_br",
+        "method": "GET"
+      },
+      "id": "2",
+      "name": "Weather API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [400, 300]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "table": "weather_data",
+        "columns": "city,country,temperature,feels_like,humidity,pressure,wind_speed,weather_main,weather_description,cloudiness,api_timestamp",
+        "values": "={{$json[\"name\"]}},BR,{{$json[\"main\"][\"temp\"]}},{{$json[\"main\"][\"feels_like\"]}},{{$json[\"main\"][\"humidity\"]}},{{$json[\"main\"][\"pressure\"]}},{{$json[\"wind\"][\"speed\"]}},{{$json[\"weather\"][0][\"main\"]}},{{$json[\"weather\"][0][\"description\"]}},{{$json[\"clouds\"][\"all\"]}},{{$json[\"dt\"]}}"
+      },
+      "id": "3",
+      "name": "MySQL Insert",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 1,
+      "position": [650, 300]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [[{ "node": "Weather API", "type": "main", "index": 0 }]]
+    },
+    "Weather API": {
+      "main": [[{ "node": "MySQL Insert", "type": "main", "index": 0 }]]
+    }
+  }
+}
