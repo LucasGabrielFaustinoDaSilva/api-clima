@@ -9,40 +9,44 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-db = mysql.connector.connect(
-    host=os.getenv("DB_HOST"),
-    user=os.getenv("DB_USER"),
-    password=os.getenv("DB_PASSWORD"),
-    database=os.getenv("DB_NAME"),
-    port=os.getenv("DB_PORT")
-)
+def get_db_connection():
+    return mysql.connector.connect(
+        host=os.getenv("DB_HOST", "localhost"),
+        user=os.getenv("DB_USER", "weather"),
+        password=os.getenv("DB_PASSWORD", "weather123"),
+        database=os.getenv("DB_NAME", "weatherdb"),
+        port=os.getenv("DB_PORT", 3306)
+    )
 
 @app.route("/weather", methods=["GET"])
 def get_weather():
-    cursor = db.cursor(dictionary=True)
-
-    cursor.execute("""
-        SELECT *
-        FROM weather_data
-        ORDER BY created_at DESC
-        LIMIT 50
-    """)
-
-    data = cursor.fetchall()
-    return jsonify(data)
-
-@app.route("/weather/latest", methods=["GET"])
-def latest():
-    cursor = db.cursor(dictionary=True)
-
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
     cursor.execute("""
         SELECT *
         FROM weather_data
         ORDER BY id DESC
         LIMIT 1
     """)
+    data = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return jsonify(data)
 
-    return jsonify(cursor.fetchone())
+@app.route("/weather/latest", methods=["GET"])
+def latest():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT *
+        FROM weather_data
+        ORDER BY id DESC
+        LIMIT 1
+    """)
+    result = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return jsonify(result)
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=3000)

@@ -1,21 +1,17 @@
 version: "3.9"
 
 services:
-
   mysql:
     image: mysql:8
     container_name: mysql_weather
     restart: always
-
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: weatherdb
       MYSQL_USER: weather
       MYSQL_PASSWORD: weather123
-
     ports:
       - "3306:3306"
-
     volumes:
       - mysql_data:/var/lib/mysql
       - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -24,17 +20,14 @@ services:
     image: n8nio/n8n
     container_name: n8n_weather
     restart: always
-
     ports:
       - "5678:5678"
-
     environment:
+      N8N_SECURE_COOKIE: "false"
       N8N_HOST: localhost
       N8N_PORT: 5678
       N8N_PROTOCOL: http
       GENERIC_TIMEZONE: America/Sao_Paulo
-      N8N_SECURE_COOKIE: "false" 
-
     volumes:
       - n8n_data:/home/node/.n8n
 
